@@ -1,4 +1,42 @@
-export default function HomePage() {
+import { connection } from "next/server";
+
+import { AddJobForm } from "@/components/add-job-form";
+import { jobDashboardMetrics, type JobRow } from "@/lib/jobs";
+import { createSupabaseClient } from "@/lib/supabaseClient";
+
+async function loadJobs(): Promise<JobRow[]> {
+  const supabase = createSupabaseClient();
+  if (!supabase) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("jobs")
+    .select("id, company, title, status, notes, created_at")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(
+      "[jobs] query failed:",
+      error.message,
+      error.code ?? "",
+      error.details ?? "",
+      error.hint ?? ""
+    );
+    return [];
+  }
+
+  return (data as JobRow[]) ?? [];
+}
+
+export default async function HomePage() {
+  await connection();
+  const jobs = await loadJobs();
+  const { tracked, interviews, responseRatePct } = jobDashboardMetrics(jobs);
+
+  const supabaseReady =
+    !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <section className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-16 sm:px-8 sm:py-20">
@@ -44,18 +82,61 @@ export default function HomePage() {
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-4">
                 <p className="text-xs text-slate-400">Applied</p>
-                <p className="mt-2 text-2xl font-semibold text-white">27</p>
+                <p className="mt-2 text-2xl font-semibold text-white">{tracked}</p>
               </div>
               <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-4">
                 <p className="text-xs text-slate-400">Interviews</p>
-                <p className="mt-2 text-2xl font-semibold text-white">6</p>
+                <p className="mt-2 text-2xl font-semibold text-white">{interviews}</p>
               </div>
               <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-4">
                 <p className="text-xs text-slate-400">Response Rate</p>
                 <p className="mt-2 text-2xl font-semibold text-emerald-300">
-                  22%
+                  {tracked === 0 ? "—" : `${responseRatePct}%`}
                 </p>
               </div>
+            </div>
+
+            <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/70 p-4">
+              <p className="text-xs text-slate-400">Recent applications</p>
+              {!supabaseReady ? (
+                <p className="mt-2 text-sm leading-relaxed text-amber-200/90">
+                  Add{" "}
+                  <code className="rounded bg-slate-900 px-1 py-0.5 text-[0.65rem] text-cyan-200">
+                    NEXT_PUBLIC_SUPABASE_URL
+                  </code>{" "}
+                  and{" "}
+                  <code className="rounded bg-slate-900 px-1 py-0.5 text-[0.65rem] text-cyan-200">
+                    NEXT_PUBLIC_SUPABASE_ANON_KEY
+                  </code>{" "}
+                  to <span className="text-slate-200">.env.local</span> (see{" "}
+                  <code className="rounded bg-slate-900 px-1 py-0.5 text-[0.65rem]">lib/supabaseClient.ts</code>
+                  ).
+                </p>
+              ) : jobs.length === 0 ? (
+                <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                  No jobs yet — add one below or insert rows in Supabase.
+                </p>
+              ) : (
+                <ul className="mt-3 max-h-44 space-y-2 overflow-y-auto pr-1 text-sm text-slate-300">
+                  {jobs.map((job) => (
+                    <li
+                      key={String(job.id)}
+                      className="flex flex-wrap items-baseline justify-between gap-2 rounded-lg border border-slate-800/80 bg-slate-950/60 px-3 py-2"
+                    >
+                      <span className="font-medium text-slate-100">
+                        {job.title ?? "—"}
+                        <span className="font-normal text-slate-500"> · </span>
+                        <span className="font-normal text-slate-300">{job.company ?? "—"}</span>
+                      </span>
+                      {job.status ? (
+                        <span className="rounded-md border border-slate-700 bg-slate-900 px-2 py-0.5 text-xs capitalize text-slate-300">
+                          {job.status}
+                        </span>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/70 p-4">
@@ -65,6 +146,8 @@ export default function HomePage() {
                 value propositions in seconds.
               </p>
             </div>
+
+            <AddJobForm />
           </div>
         </div>
       </section>

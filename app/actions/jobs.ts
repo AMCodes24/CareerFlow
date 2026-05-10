@@ -2,15 +2,33 @@
 
 import { revalidatePath } from "next/cache";
 
-import { createSupabaseClient } from "@/lib/supabaseClient";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export type CreateJobResult = { error?: string; success?: true };
 
-export async function updateJob(formData: FormData): Promise<CreateJobResult> {
-  const supabase = createSupabaseClient();
+async function requireUserSupabase() {
+  const supabase = await createServerSupabaseClient();
   if (!supabase) {
-    return { error: "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY." };
+    return {
+      error: "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+    } as const;
   }
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return { error: "You must be signed in." } as const;
+  }
+  return { supabase, user } as const;
+}
+
+export async function updateJob(formData: FormData): Promise<CreateJobResult> {
+  const ctx = await requireUserSupabase();
+  if ("error" in ctx) {
+    return { error: ctx.error };
+  }
+  const { supabase, user } = ctx;
 
   const id = String(formData.get("id") ?? "").trim();
   const company = String(formData.get("company") ?? "").trim();
@@ -33,7 +51,8 @@ export async function updateJob(formData: FormData): Promise<CreateJobResult> {
       status: status || null,
       notes: notes || null,
     })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", user.id);
 
   if (error) {
     return { error: error.message };
@@ -44,17 +63,18 @@ export async function updateJob(formData: FormData): Promise<CreateJobResult> {
 }
 
 export async function deleteJob(formData: FormData): Promise<CreateJobResult> {
-  const supabase = createSupabaseClient();
-  if (!supabase) {
-    return { error: "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY." };
+  const ctx = await requireUserSupabase();
+  if ("error" in ctx) {
+    return { error: ctx.error };
   }
+  const { supabase, user } = ctx;
 
   const id = String(formData.get("id") ?? "").trim();
   if (!id) {
     return { error: "Missing job id." };
   }
 
-  const { error } = await supabase.from("jobs").delete().eq("id", id);
+  const { error } = await supabase.from("jobs").delete().eq("id", id).eq("user_id", user.id);
 
   if (error) {
     return { error: error.message };
@@ -65,10 +85,11 @@ export async function deleteJob(formData: FormData): Promise<CreateJobResult> {
 }
 
 export async function createJob(formData: FormData): Promise<CreateJobResult> {
-  const supabase = createSupabaseClient();
-  if (!supabase) {
-    return { error: "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY." };
+  const ctx = await requireUserSupabase();
+  if ("error" in ctx) {
+    return { error: ctx.error };
   }
+  const { supabase, user } = ctx;
 
   const company = String(formData.get("company") ?? "").trim();
   const title = String(formData.get("title") ?? "").trim();
@@ -80,6 +101,7 @@ export async function createJob(formData: FormData): Promise<CreateJobResult> {
   }
 
   const { error } = await supabase.from("jobs").insert({
+    user_id: user.id,
     company,
     title,
     status: status || null,

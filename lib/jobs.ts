@@ -1,6 +1,7 @@
 /** Loose row shape — Supabase columns may include extra fields. */
 export type JobRow = {
   id: unknown;
+  user_id?: string | null;
   company: string | null;
   title: string | null;
   status: string | null;

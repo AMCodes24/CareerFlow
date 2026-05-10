@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 
 import { AddJobForm } from "@/components/add-job-form";
+import { CoverLetterAssistant } from "@/components/cover-letter-assistant";
 import { RecentApplicationsList } from "@/components/recent-applications-list";
 import { jobDashboardMetrics, type JobRow } from "@/lib/jobs";
 import { createSupabaseClient } from "@/lib/supabaseClient";
@@ -122,13 +123,7 @@ export default async function HomePage() {
               )}
             </div>
 
-            <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/70 p-4">
-              <p className="text-xs text-slate-400">AI Cover Letter Assistant</p>
-              <p className="mt-2 text-sm leading-relaxed text-slate-300">
-                Tailor each submission with role-specific highlights and concise
-                value propositions in seconds.
-              </p>
-            </div>
+            <CoverLetterAssistant />
 
             <AddJobForm />
           </div>

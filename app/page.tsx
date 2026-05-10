@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 
 import { AddJobForm } from "@/components/add-job-form";
+import { RecentApplicationsList } from "@/components/recent-applications-list";
 import { jobDashboardMetrics, type JobRow } from "@/lib/jobs";
 import { createSupabaseClient } from "@/lib/supabaseClient";
 
@@ -117,25 +118,7 @@ export default async function HomePage() {
                   No jobs yet — add one below or insert rows in Supabase.
                 </p>
               ) : (
-                <ul className="mt-3 max-h-44 space-y-2 overflow-y-auto pr-1 text-sm text-slate-300">
-                  {jobs.map((job) => (
-                    <li
-                      key={String(job.id)}
-                      className="flex flex-wrap items-baseline justify-between gap-2 rounded-lg border border-slate-800/80 bg-slate-950/60 px-3 py-2"
-                    >
-                      <span className="font-medium text-slate-100">
-                        {job.title ?? "—"}
-                        <span className="font-normal text-slate-500"> · </span>
-                        <span className="font-normal text-slate-300">{job.company ?? "—"}</span>
-                      </span>
-                      {job.status ? (
-                        <span className="rounded-md border border-slate-700 bg-slate-900 px-2 py-0.5 text-xs capitalize text-slate-300">
-                          {job.status}
-                        </span>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
+                <RecentApplicationsList jobs={jobs} />
               )}
             </div>
 

@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 import { createJob, type CreateJobResult } from "@/app/actions/jobs";
+import { JOB_STATUS_OPTIONS } from "@/lib/job-status";
 
 const initialState: CreateJobResult = {};
 
@@ -62,11 +63,11 @@ export function AddJobForm() {
             className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950/80 px-3 py-2 text-sm text-slate-100 focus:border-cyan-500/60 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
             defaultValue="applied"
           >
-            <option value="applied">Applied</option>
-            <option value="screening">Screening</option>
-            <option value="interview">Interview</option>
-            <option value="offer">Offer</option>
-            <option value="rejected">Rejected</option>
+            {JOB_STATUS_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
           </select>
         </label>
         <label className="block text-xs text-slate-400">

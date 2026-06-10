@@ -2,7 +2,7 @@ import { connection } from "next/server";
 
 import { AddJobForm } from "@/components/add-job-form";
 import { AuthHeader } from "@/components/auth-header";
-import { CoverLetterAssistant } from "@/components/cover-letter-assistant";
+import { CoverLetterStudio } from "@/components/cover-letter-studio";
 import { RecentApplicationsList } from "@/components/recent-applications-list";
 import { getPublicSupabaseConfig } from "@/lib/supabase/env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -60,7 +60,7 @@ export default async function HomePage() {
         <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-3 py-1 text-xs text-slate-300">
             <span className="h-2 w-2 animate-pulse rounded-full bg-cyan-400" />
-            AI-powered career workflow
+            Your career command center
           </div>
           {envReady ? (
             <AuthHeader loggedInEmail={userEmail} />
@@ -74,11 +74,11 @@ export default async function HomePage() {
         <div className="grid items-center gap-10 lg:grid-cols-2">
           <div className="space-y-6">
             <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              AI Job Tracker
+              CareerFlow
             </h1>
             <p className="max-w-xl text-base leading-relaxed text-slate-300 sm:text-lg">
-              Track applications intelligently, monitor interview momentum, and generate personalized
-              cover letters with AI so every opportunity gets a faster, more strategic follow-up.
+              Track every opportunity in one place. Stay organized throughout your job search and
+              manage applications, interviews, and follow-ups effortlessly.
             </p>
 
             <p className="text-sm text-slate-400">
@@ -142,7 +142,7 @@ export default async function HomePage() {
 
             {userEmail ? (
               <>
-                <CoverLetterAssistant />
+                <CoverLetterStudio />
                 <AddJobForm />
               </>
             ) : envReady ? (

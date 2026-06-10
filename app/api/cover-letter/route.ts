@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error:
-          "AI cover letters are unavailable: set OPENAI_API_KEY in .env.local.",
+          "Cover letter generation is unavailable: set OPENAI_API_KEY in .env.local.",
       },
       { status: 503 },
     );
@@ -122,12 +122,12 @@ export async function POST(req: NextRequest) {
     clearTimeout(timeout);
     if (err instanceof Error && err.name === "AbortError") {
       return NextResponse.json(
-        { error: "The AI request took too long. Try a shorter job description and try again." },
+        { error: "The request took too long. Try a shorter job description and try again." },
         { status: 504 },
       );
     }
     return NextResponse.json(
-      { error: "Could not reach the AI service. Check your connection and try again." },
+      { error: "Could not reach the cover letter service. Check your connection and try again." },
       { status: 502 },
     );
   } finally {
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
     }
     console.error("[cover-letter] OpenAI error:", openaiRes.status, detail);
     return NextResponse.json(
-      { error: "The AI service returned an error. Try again in a moment." },
+      { error: "Cover letter generation failed. Try again in a moment." },
       { status: 502 },
     );
   }
@@ -160,7 +160,7 @@ export async function POST(req: NextRequest) {
     payload = (await openaiRes.json()) as typeof payload;
   } catch {
     return NextResponse.json(
-      { error: "Unexpected response from the AI service." },
+      { error: "Unexpected response from the cover letter service." },
       { status: 502 },
     );
   }
@@ -168,7 +168,7 @@ export async function POST(req: NextRequest) {
   const letter = payload.choices?.[0]?.message?.content?.trim();
   if (!letter) {
     return NextResponse.json(
-      { error: "The AI did not return a cover letter. Try again." },
+      { error: "No cover letter was generated. Try again." },
       { status: 502 },
     );
   }

@@ -1,3 +1,7 @@
+# CareerFlow
+
+This repository is **CareerFlow** — a Next.js job-search tracker with Supabase auth and Cover Letter Studio (`components/cover-letter-studio.tsx`).
+
 <!-- BEGIN:nextjs-agent-rules -->
 # This is NOT the Next.js you know
 

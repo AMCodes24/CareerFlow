@@ -8,7 +8,7 @@ type ApiErr = { error: string };
 const CLIENT_TIMEOUT_MS = 60_000;
 const MIN_DESCRIPTION_LEN = 20;
 
-export function CoverLetterAssistant() {
+export function CoverLetterStudio() {
   const [company, setCompany] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const [jobDescription, setJobDescription] = useState("");
@@ -81,7 +81,7 @@ export function CoverLetterAssistant() {
       <details className="group">
         <summary className="cursor-pointer list-none text-xs font-medium text-slate-200 [&::-webkit-details-marker]:hidden">
           <span className="flex items-center justify-between gap-2">
-            <span>AI Cover Letter Assistant</span>
+            <span>Cover Letter Studio</span>
             <span className="text-slate-500 transition group-open:rotate-180">▼</span>
           </span>
         </summary>

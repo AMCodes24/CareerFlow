@@ -1,229 +1,162 @@
 # CareerFlow
 
-**CareerFlow** is a full-stack job search management platform that helps you track applications, monitor interview progress, and stay organized from first outreach to final offer.
+CareerFlow is a professional job search management platform for tracking applications, interviews, follow-ups, and overall career pipeline progress.
 
-> **Resume summary:** Built a production-ready Next.js application with Supabase authentication, row-level security, real-time dashboard metrics, full job CRUD, and server-side cover letter generation—designed with a clean, professional UI focused on organization and career momentum.
+**Portfolio summary:** Built a production-ready full-stack Next.js application with secure Supabase authentication, row-level data protection, workflow-oriented CRUD operations, and analytics-driven dashboard metrics.
 
-**Live repository:** [github.com/AMCodes24/careerflow](https://github.com/AMCodes24/careerflow)
-
----
+**Repository:** [github.com/AMCodes24/careerflow](https://github.com/AMCodes24/careerflow)
 
 ## Project Overview
 
-CareerFlow is a single-page dashboard for managing your job search. Users sign in with email and password, log applications with company details and status, view pipeline metrics at a glance, edit or delete entries, and generate tailored cover letters from job postings—all in one place.
-
-The app is branded as a professional career workflow tool (similar in spirit to Notion, Linear, or Airtable) rather than an AI-first product. Intelligent features run in the background; the experience centers on visibility, organization, and follow-through.
-
----
+CareerFlow gives job seekers one centralized workspace to run their search like a process:
+- Track opportunities from application to offer
+- Maintain context with notes and status history
+- Monitor momentum with lightweight analytics
+- Automate repetitive writing tasks with Cover Letter Studio
 
 ## Problem It Solves
 
-Job searching is fragmented. Spreadsheets go stale, notes live in email threads, and it's easy to lose track of where each application stands. CareerFlow solves this by providing:
-
-- **One source of truth** for every application, interview, and note
-- **Clear pipeline visibility** with status tracking and dashboard metrics
-- **Faster application prep** with role-specific cover letter drafts
-- **Secure, per-user data** so your search stays private
-
----
+Most job searches are managed across fragmented tools (notes apps, spreadsheets, email threads). CareerFlow consolidates this into a single system that improves visibility, consistency, and follow-through.
 
 ## Key Features
 
-| Feature | Description |
-| --- | --- |
-| **Application tracker** | Add jobs with company, title, status, and notes |
-| **Dashboard metrics** | Total applications, interview count, and response rate |
-| **Recent applications** | Scrollable list with inline edit and delete |
-| **Status management** | Track pipeline stages (applied, interviewing, offer, etc.) |
-| **Cover Letter Studio** | Generate tailored cover letters from job descriptions |
-| **Authentication** | Email/password sign-up, sign-in, and sign-out via Supabase |
-| **Per-user data isolation** | Row-level security ensures users only see their own jobs |
-| **Responsive UI** | Dark, modern interface built with Tailwind CSS |
+- **Job tracking & application management:** create, update, and delete job records
+- **Interview tracking:** capture interview-stage progression via status updates
+- **Workflow automation:** generate role-tailored cover letters through a secure server route
+- **Analytics:** dashboard cards for tracked applications, interview count, and response rate
+- **Secure user accounts:** email/password authentication with session persistence
+- **Data isolation:** each user only sees their own records via ownership checks + RLS
+- **Responsive interface:** modern, mobile-friendly UI built with Tailwind CSS
 
----
+## Architecture Overview
+
+CareerFlow uses a Next.js App Router architecture with clear responsibility boundaries:
+
+- **Frontend (React components):** forms, lists, dashboard cards, and user interactions
+- **Backend (Next.js server actions + route handler):**
+  - `app/actions/auth.ts` handles sign-in/sign-up/sign-out
+  - `app/actions/jobs.ts` handles job CRUD
+  - `app/api/cover-letter/route.ts` calls OpenAI securely on the server
+- **Database (Supabase Postgres):** `jobs` table with user ownership and RLS policies
+- **Auth/session layer:** `@supabase/ssr` with middleware session refresh
+
+Request flow:
+1. User authenticates with Supabase Auth
+2. Server components/actions resolve current user
+3. Job queries/mutations are scoped by `user_id`
+4. UI refreshes with updated metrics and application list
 
 ## Tech Stack
 
-| Layer | Technology |
-| --- | --- |
-| **Framework** | [Next.js 16](https://nextjs.org) (App Router) |
-| **Language** | TypeScript |
-| **UI** | React 19, Tailwind CSS 4 |
-| **Database** | [Supabase](https://supabase.com) (PostgreSQL) |
-| **Authentication** | Supabase Auth with cookie-based SSR (`@supabase/ssr`) |
-| **Cover letters** | OpenAI Chat Completions API (server-side only) |
-| **Deployment** | Vercel-ready |
-
----
+- **Framework:** Next.js 16 (App Router)
+- **Language:** TypeScript
+- **UI:** React 19 + Tailwind CSS 4
+- **Database/Auth:** Supabase (`@supabase/supabase-js`, `@supabase/ssr`)
+- **AI-assisted utility:** OpenAI Chat Completions (server-side only)
+- **Deployment target:** Vercel
 
 ## Folder Structure
 
-```
+```text
 careerflow/
 ├── app/
-│   ├── page.tsx                 # Home dashboard (server component)
-│   ├── layout.tsx               # Root layout, metadata, Open Graph
-│   ├── globals.css              # Global styles + Tailwind
-│   ├── actions/
-│   │   ├── auth.ts              # Sign up, sign in, sign out
-│   │   └── jobs.ts              # Create, update, delete jobs
-│   ├── api/cover-letter/
-│   │   └── route.ts             # Secure cover letter generation API
-│   └── auth/callback/
-│       └── route.ts             # Email confirmation / PKCE callback
-├── components/
-│   ├── auth-header.tsx          # Auth forms in header
-│   ├── add-job-form.tsx         # New application form
-│   ├── recent-applications-list.tsx  # Job list with edit/delete
-│   └── cover-letter-studio.tsx  # Cover letter generator UI
+│   ├── actions/              # Server actions (auth + jobs)
+│   ├── api/cover-letter/     # Server-side cover letter endpoint
+│   ├── auth/callback/        # Supabase auth callback route
+│   ├── layout.tsx            # Metadata + global app shell
+│   └── page.tsx              # Main dashboard page
+├── components/               # UI components and forms
 ├── lib/
-│   ├── jobs.ts                  # Job types and dashboard metrics
-│   ├── job-status.ts            # Allowed status values
-│   └── supabase/                # Server client, middleware, env helpers
-├── middleware.ts                # Session refresh on each request
-├── supabase/migrations/         # Database RLS policies
-├── public/                      # Static assets (favicon, icons)
-└── docs/                        # Architecture documentation (PDF)
+│   ├── supabase/             # Supabase SSR helpers + middleware helpers
+│   ├── jobs.ts               # Job typing + dashboard analytics helper
+│   └── job-status.ts         # Status options
+├── supabase/migrations/      # SQL migration(s) and RLS setup
+├── middleware.ts             # Session refresh middleware
+└── public/                   # Static assets
 ```
-
----
 
 ## Installation
 
-### Prerequisites
-
-- [Node.js](https://nodejs.org) 20+
-- A [Supabase](https://supabase.com) project
-- An [OpenAI](https://platform.openai.com) API key (for Cover Letter Studio)
-
-### Steps
+Prerequisites:
+- Node.js 20+
+- Supabase project
+- OpenAI API key (for Cover Letter Studio)
 
 ```bash
-# Clone the repository
 git clone https://github.com/AMCodes24/careerflow.git
 cd careerflow
-
-# Install dependencies
 npm install
-
-# Configure environment (see below)
-cp .env.example .env.local   # or create .env.local manually
-
-# Run database migration in Supabase SQL Editor
-# (see supabase/migrations/20260510180000_jobs_user_rls.sql)
-
-# Start development server
+cp .env.example .env.local
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
-
----
+Open `http://localhost:3000`.
 
 ## Environment Variables
 
-Create a `.env.local` file in the project root:
+Create `.env.local`:
 
-| Variable | Required | Description |
+| Variable | Required | Purpose |
 | --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL (Settings → API) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anonymous/public key |
-| `OPENAI_API_KEY` | Yes* | OpenAI API key for cover letter generation |
-| `NEXT_PUBLIC_SITE_URL` | Optional | Site URL for email confirmation redirects (e.g. `http://localhost:3000`) |
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon key |
+| `OPENAI_API_KEY` | Optional* | Enables Cover Letter Studio |
+| `NEXT_PUBLIC_SITE_URL` | Optional | Auth callback base URL |
 
-\* Required only if using Cover Letter Studio.
+\* Optional unless using cover letter generation.
 
-**Never commit `.env.local` or expose API keys in client-side code.** The OpenAI key is used exclusively in the server-side API route.
+## Supabase Security Configuration
 
-### Supabase setup
-
-1. Create a `jobs` table with columns: `id`, `user_id`, `company`, `title`, `status`, `notes`, `created_at`
-2. Run the migration in `supabase/migrations/20260510180000_jobs_user_rls.sql` to enable row-level security
-3. In Supabase Auth settings, add your callback URL: `{SITE_URL}/auth/callback`
-
----
+For production safety:
+- Enable RLS on `jobs`
+- Apply migration in `supabase/migrations/20260510180000_jobs_user_rls.sql`
+- Ensure policies scope records to `auth.uid() = user_id`
+- Keep service role keys out of client code (none are used in this app)
 
 ## Usage Guide
 
-1. **Sign up** — Create an account with email and password from the header.
-2. **Add applications** — Fill in company, title, status, and notes, then click **Add Job**.
-3. **Track progress** — View dashboard metrics and your recent applications list.
-4. **Edit or delete** — Use row actions to update details or remove entries.
-5. **Generate cover letters** — Open **Cover Letter Studio**, paste the job description, and click **Generate cover letter**. Copy the result to your clipboard.
-
----
+1. Sign up or sign in
+2. Add job applications with company/title/status/notes
+3. Update status as opportunities progress to interview/offer
+4. Use dashboard analytics to monitor search velocity
+5. Use Cover Letter Studio for workflow acceleration when needed
 
 ## Current Development Status
 
-| Area | Status |
-| --- | --- |
-| Landing page & dashboard | Complete |
-| Supabase auth (email/password) | Complete |
-| Job CRUD with user scoping | Complete |
-| Row-level security migration | Complete |
-| Cover Letter Studio | Complete |
-| Responsive dark UI | Complete |
-| Automated tests | Not yet implemented |
-| Search / filtering | Not yet implemented |
+- Core platform flows complete (auth + CRUD + dashboard analytics)
+- Security baseline complete (SSR auth + RLS migration)
+- Build/lint pipeline configured
+- Automated tests and advanced analytics are planned next
 
----
+## Roadmap
 
-## Roadmap / Future Improvements
-
-- [ ] Add automated tests (auth flows, CRUD, API route)
-- [ ] Search and filter applications by company, status, or date
-- [ ] Interview scheduling and follow-up reminders
-- [ ] Networking contact tracker
-- [ ] Export applications to CSV or PDF
-- [ ] Stronger TypeScript types generated from Supabase schema
-- [ ] Require authentication on the cover letter API route
-- [ ] Mobile-optimized layouts and PWA support
-
----
+- Add tests (unit/integration/e2e)
+- Add filters, sorting, and search
+- Add timeline view for application lifecycle
+- Add reminders and follow-up scheduling
+- Add richer analytics (conversion rates by stage, weekly trendline)
+- Add export/reporting capabilities
 
 ## Screenshots
 
-> Add screenshots here after deploying or running locally.
-
-| Dashboard | Add Application | Cover Letter Studio |
-| --- | --- | --- |
-| _screenshot-dashboard.png_ | _screenshot-add-job.png_ | _screenshot-cover-letter.png_ |
-
-```bash
-# Suggested: capture at 1280×800 and save to docs/screenshots/
-```
-
----
+Add screenshots in a future update:
+- `docs/screenshots/dashboard.png`
+- `docs/screenshots/add-job-form.png`
+- `docs/screenshots/cover-letter-studio.png`
 
 ## Scripts
 
 ```bash
-npm run dev      # Start development server
-npm run build    # Production build
-npm run start    # Start production server
-npm run lint     # Run ESLint
+npm run dev
+npm run lint
+npm run build
+npm run start
 ```
 
----
+## Portfolio / Recruiter Talking Points
 
-## Deploy on Vercel
-
-1. Push to GitHub and import the repo in [Vercel](https://vercel.com/new)
-2. Add environment variables in Project Settings → Environment Variables
-3. Deploy
-
-Set `NEXT_PUBLIC_SITE_URL` to your production URL and add `{production-url}/auth/callback` in Supabase Auth URL configuration.
-
----
-
-## Documentation
-
-For a beginner-friendly architecture walkthrough, see:
-
-[docs/careerflow-codebase-explanation.pdf](docs/careerflow-codebase-explanation.pdf)
-
----
-
-## License
-
-Private project. All rights reserved.
+- Designed and shipped a secure multi-user full-stack product
+- Implemented Supabase auth/session + row-level data isolation
+- Built maintainable server-action based CRUD architecture in Next.js
+- Added practical workflow automation without exposing API keys client-side
+- Delivered a clean, production-oriented UX with analytics-centric dashboarding
